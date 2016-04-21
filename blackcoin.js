@@ -63,4 +63,4 @@ function getLastTxTime( txArray ) {
 	}
 }
 
-setInterval( checkForNewStake(), 600 ); // Check every 10 min.
+setInterval( checkForNewStake, 600000 ); // Check every 10 min.
