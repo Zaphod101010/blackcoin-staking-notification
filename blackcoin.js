@@ -23,7 +23,8 @@ var mailOptions = {
 	to: "", 						   // receiver
 	subject: "New Stakes",
 	}; 
-
+	
+var timeLastTxReceived;
 client.cmd( "listtransactions", function( err, result ){ 
 	if (err) return console.log(err);
 	timeLastTxReceived = getLastTxTime( result );
