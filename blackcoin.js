@@ -23,31 +23,40 @@ var mailOptions = {
 	to: "", 						   // receiver
 	subject: "New Stakes",
 	}; 
-	
+
+// Record time of last TX	
 var timeLastTxReceived;
 client.cmd( "listtransactions", function( err, result ){ 
 	if (err) return console.log(err);
 	timeLastTxReceived = getLastTxTime( result );
+	console.log( "Connected to blackcoind!  " + new Date() );
 });
 
 
 function checkForNewStake() {
+	console.log( "Checking for new stakes..." + new Date() );
 	var newStakes = [];
-
+	// get last 10 txns
 	client.cmd( "listtransactions", function( err, result ){ 
 		if (err) return console.log(err);
-
+		// Check for any new txns since the last time it was checked
 		if ( getLastTxTime( result ) > timeLastTxReceived ) {
 			for ( i = result.length - 1 ; i >= 0 ; i-- ){
+				// Txns that are 'generated' are staked
 				if ( result[i].generated === true && result[i].timereceived > timeLastTxReceived ) {
-					newStakes.push( "Account: "+ result[i].account + " Staked: " + result[i].amount + " Time: " + result[i].time );
+					var timeStamp = new Date(result[i].time * 1000);
+					newStakes.push( "Account: "+ result[i].account + " Staked: " + result[i].amount + " Time: " + timeStamp + ".  " );
 				}
 			}
+			console.log(newStakes.length + "New stakes!");
+			// Set the body of the email to be sent
 			mailOptions.text = String(newStakes);
+			// Send email
 			transporter.sendMail( mailOptions, function ( err, result ) {
 				if (err) return console.log( err );
 				console.log('Message sent: ' + result.response);
 			});
+			// Record time of last txn
 			timeLastTxReceived = getLastTxTime( result );		
 		} else {
 			console.log( "no new stakes." );
