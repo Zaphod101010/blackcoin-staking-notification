@@ -39,28 +39,33 @@ function checkForNewStake() {
 	// get last 10 txns
 	client.cmd( "listtransactions", function( err, result ){ 
 		if (err) return console.log(err);
+
 		// Check for any new txns since the last time it was checked
 		if ( getLastTxTime( result ) > timeLastTxReceived ) {
+
+			// Collect new staked transactions
 			for ( i = result.length - 1 ; i >= 0 ; i-- ){
-				// Txns that are 'generated' are staked
-				if ( result[i].generated === true && result[i].timereceived > timeLastTxReceived ) {
+				if ( result[i].generated === true && result[i].timereceived > timeLastTxReceived ) { // Txns that are 'generated' are staked
 					var timeStamp = new Date(result[i].time * 1000);
 					newStakes.push( "Account: "+ result[i].account + " Staked: " + result[i].amount + " Time: " + timeStamp + ".  " );
 				}
 			}
-			console.log(newStakes.length + "New stakes!");
-			// Set the body of the email to be sent
-			mailOptions.text = String(newStakes);
-			// Send email
-			transporter.sendMail( mailOptions, function ( err, result ) {
-				if (err) return console.log( err );
-				console.log('Message sent: ' + result.response);
-			});
-			// Record time of last txn
-			timeLastTxReceived = getLastTxTime( result );		
+
+			if ( newStakes.length > 0 ) {
+				// Set the body of the email to be sent
+				mailOptions.text = String(newStakes);
+				// Send email
+				transporter.sendMail( mailOptions, function ( err, result ) {
+					if (err) return console.log( err );
+					console.log('Message sent: ' + result.response);
+				});
+			}
 		} else {
 			console.log( "no new stakes." );
 		}
+		
+		// Record time of last txn
+		timeLastTxReceived = getLastTxTime( result );
 	});
 }
 
